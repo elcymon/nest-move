@@ -18,11 +18,11 @@ from threading import Thread
 
 hz = 40
 
-linear_vel = 0.1
-angular_vel = 0.1
+linear_vel = 0#.1/8.0
+angular_vel = (1.77/4.0)/8.0
 
 yaw = 0
-turn_prob = 1.0/(hz*10)
+turn_prob = 0#1.0/(hz*10)
 
 bumper = BumperEvent()
 avoid_obstacle = False
@@ -79,7 +79,7 @@ def goal_distance(g,p):
 def callback_log(data):
     with open(log_filename,'a') as f:
         f.write(data.data+'\n')
-def explore():
+def explore(sound=True):
     global avoid_obstacle,drd_heading,goal
 
     pub = rospy.Publisher('mobile_base/commands/velocity', Twist,queue_size=1)
@@ -122,11 +122,12 @@ def explore():
     time.sleep(10)
     
     #start sound
-    thread.start()
+    if sound:
+		thread.start()
 
     t_elapsed = 0
     t = rospy.Time.now().to_sec()
-    logheader = 't,goal_d,nest_x,nest_y,nest_yaw'
+    logheader = 't,ros_t,goal_d,nest_x,nest_y,nest_yaw'
     pub_log.publish(logheader)
     while not rospy.is_shutdown():# and x < 10 * 60 * 4
         x +=1
@@ -144,7 +145,7 @@ def explore():
             audio_gen.close_speaker()
             break
         else:
-            rot_vel = hdg_ctrl_effort * hdg_scale
+            rot_vel = hdg_ctrl_effort * hdg_scale * 10
             if rot_vel > angular_vel: rot_vel = angular_vel
             if rot_vel < -angular_vel: rot_vel = -angular_vel
 
@@ -154,7 +155,7 @@ def explore():
         if bumper.state == 1:
                rvel = stop
             
-        log = '{},{},{},{},{}'.format(rospy.Time.now().to_sec()-t,pose.x-goal_d,pose.x,pose.y,yaw)
+        log = '{},{},{},{},{},{}'.format(time.time(),rospy.Time.now().to_sec()-t,goal_d,pose.x,pose.y,yaw)
         print rospy.Time.now().to_sec()-t,goal_d,bumper.state
         
         pub_log.publish(log)
@@ -162,7 +163,10 @@ def explore():
         pub.publish(rvel)
         
         #heading control
-        set_p = drd_heading
+        drd_heading = math.atan2(0.0 - pose.y, 10.0 - pose.x)
+        set_p = drd_heading if drd_heading > 0 else 2 * math.pi + drd_heading
+        set_p = angles.normalize_angle(set_p)
+        
         state_p = yaw
         if set_p < 0:
             set_p = set_p + math.pi * 2.0
@@ -178,6 +182,6 @@ def explore():
 if __name__=="__main__":
     node = rospy.init_node('my_turtle',anonymous=True)
     try:
-        explore()
+        explore(sound=True)
     except rospy.ROSInterruptException:
         pass
