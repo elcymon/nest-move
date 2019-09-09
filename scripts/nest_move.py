@@ -17,172 +17,180 @@ from threading import Thread
 import sys
 sys.path.insert(0,'../../audio_gen') # add audio gen folder to pythonpath
 from audio_gen_oop import Audio_gen
-hz = 40
 
-linear_vel = 0#.1/8.0
-angular_vel = (1.77/4.0)/8.0
+class NestPkg:
+    def __init__(self,experimentDuration = 0, velocity = 0,distance = 0,experimentWaitDuration = 0):
+        self.hz = 40
+        self.experimentWaitDuration = experimentWaitDuration
+        self.linear_vel = velocity
+        self.angular_vel = velocity / 2.0
+        self.experimentDuration = experimentDuration
 
-yaw = 0
-turn_prob = 0#1.0/(hz*10)
-
-bumper = BumperEvent()
-avoid_obstacle = False
-
-drd_heading = 0
-start = True
-hdg_ctrl_effort = 0
-hdg_scale = angular_vel/100.0 #max_rot_vel/max_ctrl_effort
-
-goal = Point()
-pose = Point()
-# pose = Odometry()
-pkg_path = '/home/turtlebot/catkin_ws/src/audio_gen/'
-# log_filename = pkg_path+'results/'+time.strftime('%Y%m%d%H%M%S') + 'data.txt'
-
-def callback_imu(data):
-    global yaw,drd_heading,start
-
-    quaternion = (data.orientation.x,
-                data.orientation.y,
-                data.orientation.z,
-                data.orientation.w)
-    (r, p, y) = euler_from_quaternion(quaternion)
-    yaw = y
-    if start:
-        start = False
-        drd_heading = yaw
-def callback_bumper(data):
-    global bumper, avoid_obstacle
-    bumper = BumperEvent()
-    bumper = data
-    if bumper.state == 1:
-        avoid_obstacle = True
-
-def callback_hdg_pid(data):
-    global hdg_ctrl_effort
-    hdg_ctrl_effort = data.data
-
-def callback_odom(data):
-    global pose
-    pose = Point()
-    pose = data.pose.pose.position
-
-def goal_direction(g,p):
-    """ function to compute the orientation of robot wrt to gaol.
-        g is goal x,y location and p is Twist of robot current pose"""
-    # return math.atan2(g.y - p.pose.pose.position.y, g.x - p.pose.pose.position.x)
-    return math.atan2(g.y - p.y, g.x - p.x)
-
-def goal_distance(g,p):
-    """computes distance of robot from desired goal location"""
-    # return math.sqrt(pow(g.x-p.pose.pose.position.x,2) + pow(g.y-p.pose.pose.position.y,2))
-    return math.sqrt(pow(g.x-p.x,2) + pow(g.y-p.y,2))
-# def callback_log(data):
-#     with open(log_filename,'a') as f:
-#         f.write(data.data+'\n')
-def explore(sound=True):
-    global avoid_obstacle,drd_heading,goal
-
-    pub = rospy.Publisher('mobile_base/commands/velocity', Twist,queue_size=1)
-    pub_hdg_setpoint = rospy.Publisher('/hdg/setpoint',Float64,queue_size=1)
-    pub_hdg_state = rospy.Publisher('/hdg/state',Float64,queue_size=1)
-
-    sub_imu = rospy.Subscriber('/mobile_base/sensors/imu_data',Imu,callback_imu,queue_size=1)
-    sub_bumper = rospy.Subscriber('/mobile_base/events/bumper',BumperEvent,callback_bumper,queue_size=1)
-    sub_hdg_pid = rospy.Subscriber('/hdg/control_effort',Float64,callback_hdg_pid,queue_size=1)
-
-    sub_odom = rospy.Subscriber('/odom',Odometry,callback_odom,queue_size=1)
-    
-    # pub_log = rospy.Publisher('/nest_move/log',String,queue_size=1)
-    # sub_log = rospy.Subscriber('/nest_move/log',String,callback_log,queue_size=1)
-    rate = rospy.Rate(hz)
-    straight = Twist()
-    straight.linear.x = linear_vel
-
-    turn_left = Twist()
-    turn_left.angular.z = angular_vel
-    turn_left.linear.x = 0
-    
-    turn_right = Twist()
-    turn_right.angular.z = -angular_vel
-    turn_right.linear.x = linear_vel#-linear_vel/10.0
-    
-    stop = Twist()
-    stop.angular.z = 0
-    stop.linear.x = 0
-    x = 0
-
-    goal.x = 10
-    goal.y = 0
-
-    #create thread for starting nest's speaker as it starts moving
-    audio_gen = Audio_gen(pkg_path+'White-noise-sound-20sec-mono-44100Hz.wav')
-    thread = Thread(target = audio_gen.send_to_speaker)
-    
-    #pause for 10 seconds before starting motion
-    time.sleep(10)
-    
-    #start sound
-    if sound:
-		thread.start()
-
-    t_elapsed = 0
-    t = rospy.Time.now().to_sec()
-    logheader = 't,ros_t,goal_d,nest_x,nest_y,nest_yaw'
-    # pub_log.publish(logheader)
-    while not rospy.is_shutdown():# and x < 10 * 60 * 4
-        x +=1
-        rvel = straight#default is straight
+        self.yaw = 0
         
+        self.bumper = BumperEvent()
+        self.avoid_obstacle = False
+
+        self.drd_heading = 0
+        self.start = True
+        self.hdg_ctrl_effort = 0
+        self.hdg_scale = self.angular_vel/100.0 #max_rot_vel/max_ctrl_effort
+
+        self.goal = Point()
+        self.goal.x,self.goal.y = distance,0
+        self.pose = Point()
+        # pose = Odometry()
+        self.pkg_path = '/home/turtlebot/catkin_ws/src/audio_gen/'
+        # log_filename = pkg_path+'results/'+time.strftime('%Y%m%d%H%M%S') + 'data.txt'
+
+    def callback_imu(self,data):
+
+        quaternion = (data.orientation.x,
+                    data.orientation.y,
+                    data.orientation.z,
+                    data.orientation.w)
+        (r, p, y) = euler_from_quaternion(quaternion)
+        self.yaw = y
+        if self.start:
+            self.start = False
+            self.drd_heading = self.yaw
+    def callback_bumper(self,data):
+        self.bumper = BumperEvent()
+        self.bumper = data
+        if self.bumper.state == 1:
+            self.avoid_obstacle = True
+
+    def callback_hdg_pid(self,data):
+        self.hdg_ctrl_effort = data.data
+
+    def callback_odom(self,data):
+        self.pose = Point()
+        self.pose = data.pose.pose.position
+
+    def goal_direction(self,g,p):
+        """ function to compute the orientation of robot wrt to gaol.
+            g is goal x,y location and p is Twist of robot current pose"""
+        # return math.atan2(g.y - p.pose.pose.position.y, g.x - p.pose.pose.position.x)
+        return math.atan2(g.y - p.y, g.x - p.x)
+
+    def goal_distance(self,g,p):
+        """computes distance of robot from desired goal location"""
+        # return math.sqrt(pow(g.x-p.pose.pose.position.x,2) + pow(g.y-p.pose.pose.position.y,2))
+        return math.sqrt(pow(g.x-p.x,2) + pow(g.y-p.y,2))
+    # def callback_log(data):
+    #     with open(log_filename,'a') as f:
+    #         f.write(data.data+'\n')
+    def explore(self,sound=True):
         
+        pub = rospy.Publisher('mobile_base/commands/velocity', Twist,queue_size=1)
+        pub_hdg_setpoint = rospy.Publisher('/hdg/setpoint',Float64,queue_size=1)
+        pub_hdg_state = rospy.Publisher('/hdg/state',Float64,queue_size=1)
+
+        sub_imu = rospy.Subscriber('/mobile_base/sensors/imu_data',Imu,self.callback_imu,queue_size=1)
+        sub_bumper = rospy.Subscriber('/mobile_base/events/bumper',BumperEvent,self.callback_bumper,queue_size=1)
+        sub_hdg_pid = rospy.Subscriber('/hdg/control_effort',Float64,self.callback_hdg_pid,queue_size=1)
+
+        sub_odom = rospy.Subscriber('/odom',Odometry,self.callback_odom,queue_size=1)
         
-        goal_d = goal_distance(goal,pose)
-        if goal_d < 0.1 or pose.x > goal.x:
+        # pub_log = rospy.Publisher('/nest_move/log',String,queue_size=1)
+        # sub_log = rospy.Subscriber('/nest_move/log',String,callback_log,queue_size=1)
+        rate = rospy.Rate(self.hz)
+        straight = Twist()
+        straight.linear.x = self.linear_vel
+
+        turn_left = Twist()
+        turn_left.angular.z = self.angular_vel
+        turn_left.linear.x = 0
+        
+        turn_right = Twist()
+        turn_right.angular.z = -self.angular_vel
+        turn_right.linear.x = self.linear_vel#-linear_vel/10.0
+        
+        stop = Twist()
+        stop.angular.z = 0
+        stop.linear.x = 0
+        x = 0
+
+
+        #create thread for starting nest's speaker as it starts moving
+        audio_gen = Audio_gen(self.pkg_path+'White-noise-sound-20sec-mono-44100Hz.wav')
+        thread = Thread(target = audio_gen.send_to_speaker)
+        
+        #pause for 10 seconds before starting motion
+        time.sleep(self.experimentWaitDuration)
+        
+        #start sound
+        if sound:
+            thread.start()
+
+        t_elapsed = 0
+        t = rospy.Time.now().to_sec()
+        goal_d = self.goal_distance(self.goal,self.pose)
+        logheader = 't,ros_t,goal_d,nest_x,nest_y,nest_yaw'
+        # pub_log.publish(logheader)
+        while not rospy.is_shutdown():# and x < 10 * 60 * 4
+            t_elapsed = rospy.Time.now().to_sec()-t
+            log = '{},{},{},{},{},{}'.format(time.time(),t_elapsed,goal_d,self.pose.x,self.pose.y,self.yaw)
+            print t_elapsed,goal_d,self.bumper.state
             
-            #stop robot
-            rvel = stop
-
-            #close speaker
-            audio_gen.close_speaker()
-            break
-        else:
-            rot_vel = hdg_ctrl_effort * hdg_scale * 10
-            if rot_vel > angular_vel: rot_vel = angular_vel
-            if rot_vel < -angular_vel: rot_vel = -angular_vel
-
-            rvel.angular.z = rot_vel
-        
-        #stop whenever an obstacle is hit
-        if bumper.state == 1:
-               rvel = stop
+            x +=1
+            rvel = straight#default is straight
             
-        log = '{},{},{},{},{},{}'.format(time.time(),rospy.Time.now().to_sec()-t,goal_d,pose.x,pose.y,yaw)
-        print rospy.Time.now().to_sec()-t,goal_d,bumper.state
-        
-        # pub_log.publish(log)
-        
-        pub.publish(rvel)
-        
-        #heading control
-        drd_heading = math.atan2(0.0 - pose.y, 10.0 - pose.x)
-        set_p = drd_heading if drd_heading > 0 else 2 * math.pi + drd_heading
-        set_p = angles.normalize_angle(set_p)
-        
-        state_p = yaw
-        if set_p < 0:
-            set_p = set_p + math.pi * 2.0
-        if state_p < 0:
-            state_p = state_p + math.pi * 2.0
-        # print 'straight',state_p,set_p,rot_vel
-        pub_hdg_setpoint.publish(set_p)
-        pub_hdg_state.publish(state_p)
-        # print(yaw)        
-        rate.sleep()
-    print("Quitting")
+            
+            
+            goal_d = self.goal_distance(self.goal,self.pose)
+            if self.linear_vel > 0:
+                #stop based on distance travelled
+                stopCondition = goal_d < 0.1 or self.pose.x > self.goal.x
+            else:
+                #stop based on experimet duration
+                stopCondition = self.experimentDuration < t_elapsed
+            if stopCondition:
+                
+                #stop robot
+                rvel = stop
+
+                #close speaker
+                audio_gen.close_speaker()
+                break
+            else:
+                rot_vel = self.hdg_ctrl_effort * self.hdg_scale * 10
+                if rot_vel > self.angular_vel: rot_vel = self.angular_vel
+                if rot_vel < -self.angular_vel: rot_vel = -self.angular_vel
+
+                rvel.angular.z = rot_vel
+            
+            #stop whenever an obstacle is hit
+            if self.bumper.state == 1:
+                rvel = stop
+            
+            # pub_log.publish(log)
+            
+            pub.publish(rvel)
+            
+            #heading control
+            self.drd_heading = math.atan2(self.goal.y - self.pose.y, self.goal.x - self.pose.x)
+            set_p = self.drd_heading if self.drd_heading > 0 else 2 * math.pi + self.drd_heading
+            set_p = angles.normalize_angle(set_p)
+            
+            state_p = self.yaw
+            if set_p < 0:
+                set_p = set_p + math.pi * 2.0
+            if state_p < 0:
+                state_p = state_p + math.pi * 2.0
+            # print 'straight',state_p,set_p,rot_vel
+            pub_hdg_setpoint.publish(set_p)
+            pub_hdg_state.publish(state_p)
+            # print(yaw)        
+            rate.sleep()
+            
+        print("Quitting")
 
 if __name__=="__main__":
     node = rospy.init_node('my_turtle',anonymous=True)
     try:
-        explore(sound=True)
+        experimentDuration,velocity,distance,experimentWaitDuration = 1,0,10,0
+        nest = NestPkg(experimentDuration,velocity,distance,experimentWaitDuration)
+        nest.explore(sound=True)
     except rospy.ROSInterruptException:
         pass
