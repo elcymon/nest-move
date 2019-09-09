@@ -13,9 +13,10 @@ import time
 import numpy as np
 import wave
 import pyaudio
-from audio_gen_oop import Audio_gen
 from threading import Thread
-
+import sys
+sys.path.insert(0,'../../audio_gen') # add audio gen folder to pythonpath
+from audio_gen_oop import Audio_gen
 hz = 40
 
 linear_vel = 0#.1/8.0
@@ -35,8 +36,8 @@ hdg_scale = angular_vel/100.0 #max_rot_vel/max_ctrl_effort
 goal = Point()
 pose = Point()
 # pose = Odometry()
-pkg_path = '/home/turtlebot/catkin_ws/src/nest_move/'
-log_filename = pkg_path+'results/'+time.strftime('%Y%m%d%H%M%S') + 'data.txt'
+pkg_path = '/home/turtlebot/catkin_ws/src/audio_gen/'
+# log_filename = pkg_path+'results/'+time.strftime('%Y%m%d%H%M%S') + 'data.txt'
 
 def callback_imu(data):
     global yaw,drd_heading,start
@@ -76,9 +77,9 @@ def goal_distance(g,p):
     """computes distance of robot from desired goal location"""
     # return math.sqrt(pow(g.x-p.pose.pose.position.x,2) + pow(g.y-p.pose.pose.position.y,2))
     return math.sqrt(pow(g.x-p.x,2) + pow(g.y-p.y,2))
-def callback_log(data):
-    with open(log_filename,'a') as f:
-        f.write(data.data+'\n')
+# def callback_log(data):
+#     with open(log_filename,'a') as f:
+#         f.write(data.data+'\n')
 def explore(sound=True):
     global avoid_obstacle,drd_heading,goal
 
@@ -92,8 +93,8 @@ def explore(sound=True):
 
     sub_odom = rospy.Subscriber('/odom',Odometry,callback_odom,queue_size=1)
     
-    pub_log = rospy.Publisher('/nest_move/log',String,queue_size=1)
-    sub_log = rospy.Subscriber('/nest_move/log',String,callback_log,queue_size=1)
+    # pub_log = rospy.Publisher('/nest_move/log',String,queue_size=1)
+    # sub_log = rospy.Subscriber('/nest_move/log',String,callback_log,queue_size=1)
     rate = rospy.Rate(hz)
     straight = Twist()
     straight.linear.x = linear_vel
@@ -115,7 +116,7 @@ def explore(sound=True):
     goal.y = 0
 
     #create thread for starting nest's speaker as it starts moving
-    audio_gen = Audio_gen(pkg_path+'scripts/White-noise-sound-20sec-mono-44100Hz.wav')
+    audio_gen = Audio_gen(pkg_path+'White-noise-sound-20sec-mono-44100Hz.wav')
     thread = Thread(target = audio_gen.send_to_speaker)
     
     #pause for 10 seconds before starting motion
@@ -128,7 +129,7 @@ def explore(sound=True):
     t_elapsed = 0
     t = rospy.Time.now().to_sec()
     logheader = 't,ros_t,goal_d,nest_x,nest_y,nest_yaw'
-    pub_log.publish(logheader)
+    # pub_log.publish(logheader)
     while not rospy.is_shutdown():# and x < 10 * 60 * 4
         x +=1
         rvel = straight#default is straight
@@ -158,7 +159,7 @@ def explore(sound=True):
         log = '{},{},{},{},{},{}'.format(time.time(),rospy.Time.now().to_sec()-t,goal_d,pose.x,pose.y,yaw)
         print rospy.Time.now().to_sec()-t,goal_d,bumper.state
         
-        pub_log.publish(log)
+        # pub_log.publish(log)
         
         pub.publish(rvel)
         
