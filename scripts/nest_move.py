@@ -19,11 +19,13 @@ sys.path.insert(0,'../../audio_gen') # add audio gen folder to pythonpath
 from audio_gen_oop import Audio_gen
 
 class NestPkg:
-    def __init__(self,experimentDuration = 0, velocity = 0,distance = 0,experimentWaitDuration = 0):
+    def __init__(self,robotID = 'nest', experimentDuration = 600, velocity = 0,distance = 0,experimentWaitDuration = 0):
+        self.robotID = robotID
+
         self.hz = 40
         self.experimentWaitDuration = experimentWaitDuration
         self.linear_vel = velocity
-        self.angular_vel = velocity / 2.0
+        self.angular_vel = velocity / 1.77 # half of 0.354 diameter
         self.experimentDuration = experimentDuration
 
         self.yaw = 0
@@ -92,7 +94,7 @@ class NestPkg:
 
         sub_odom = rospy.Subscriber('/odom',Odometry,self.callback_odom,queue_size=1)
         
-        # pub_log = rospy.Publisher('/nest_move/log',String,queue_size=1)
+        pub_log = rospy.Publisher('/log',String,queue_size=1)
         # sub_log = rospy.Subscriber('/nest_move/log',String,callback_log,queue_size=1)
         rate = rospy.Rate(self.hz)
         straight = Twist()
@@ -116,8 +118,6 @@ class NestPkg:
         audio_gen = Audio_gen(self.pkg_path+'White-noise-sound-20sec-mono-44100Hz.wav')
         thread = Thread(target = audio_gen.send_to_speaker)
         
-        #pause for 10 seconds before starting motion
-        time.sleep(self.experimentWaitDuration)
         
         #start sound
         if sound:
@@ -126,21 +126,26 @@ class NestPkg:
         t_elapsed = 0
         t = rospy.Time.now().to_sec()
         goal_d = self.goal_distance(self.goal,self.pose)
-        logheader = 't,ros_t,goal_d,nest_x,nest_y,nest_yaw'
-        # pub_log.publish(logheader)
+        logheader = 'robotID:goal_d,nest_x,nest_y,nest_yaw'
+        
+        #pause for some  seconds before starting motion
+        time.sleep(self.experimentWaitDuration)
+        
+        pub_log.publish(logheader)
         while not rospy.is_shutdown():# and x < 10 * 60 * 4
             t_elapsed = rospy.Time.now().to_sec()-t
-            log = '{},{},{},{},{},{}'.format(time.time(),t_elapsed,goal_d,self.pose.x,self.pose.y,self.yaw)
-            print t_elapsed,goal_d,self.bumper.state
+            log = '{}:{},{},{},{}'.format(self.robotID,goal_d,self.pose.x,self.pose.y,self.yaw)
+            pub_log.publish(log)
+            # print t_elapsed,goal_d,self.bumper.state
             
             x +=1
             rvel = straight#default is straight
             
             
             
-            goal_d = self.goal_distance(self.goal,self.pose)
             if self.linear_vel > 0:
                 #stop based on distance travelled
+                goal_d = self.goal_distance(self.goal,self.pose)
                 stopCondition = goal_d < 0.1 or self.pose.x > self.goal.x
             else:
                 #stop based on experimet duration
