@@ -84,15 +84,15 @@ class NestPkg:
     #         f.write(data.data+'\n')
     def explore(self,sound=True):
         
-        pub = rospy.Publisher(self.robotID + '/mobile_base/commands/velocity', Twist,queue_size=1)
-        pub_hdg_setpoint = rospy.Publisher(self.robotID + '/hdg/setpoint',Float64,queue_size=1)
-        pub_hdg_state = rospy.Publisher(self.robotID + '/hdg/state',Float64,queue_size=1)
+        pub = rospy.Publisher('/{}/mobile_base/commands/velocity'.format(self.robotID), Twist,queue_size=1)
+        pub_hdg_setpoint = rospy.Publisher('/{}/hdg/setpoint'.format(self.robotID),Float64,queue_size=1)
+        pub_hdg_state = rospy.Publisher('/{}/hdg/state',Float64,queue_size=1)
 
-        sub_imu = rospy.Subscriber(self.robotID + '/mobile_base/sensors/imu_data',Imu,self.callback_imu,queue_size=1)
-        sub_bumper = rospy.Subscriber(self.robotID + '/mobile_base/events/bumper',BumperEvent,self.callback_bumper,queue_size=1)
-        sub_hdg_pid = rospy.Subscriber(self.robotID + '/hdg/control_effort',Float64,self.callback_hdg_pid,queue_size=1)
+        sub_imu = rospy.Subscriber('/{}/mobile_base/sensors/imu_data'.format(self.robotID),Imu,self.callback_imu,queue_size=1)
+        sub_bumper = rospy.Subscriber('/{}/mobile_base/events/bumper'.format(self.robotID),BumperEvent,self.callback_bumper,queue_size=1)
+        sub_hdg_pid = rospy.Subscriber('/{}/hdg/control_effort'.format(self.robotID),Float64,self.callback_hdg_pid,queue_size=1)
 
-        sub_odom = rospy.Subscriber(self.robotID + '/odom',Odometry,self.callback_odom,queue_size=1)
+        sub_odom = rospy.Subscriber('/{}/odom'.format(self.robotID),Odometry,self.callback_odom,queue_size=1)
         
         pub_log = rospy.Publisher('/log',String,queue_size=1)
         # sub_log = rospy.Subscriber('/nest_move/log',String,callback_log,queue_size=1)

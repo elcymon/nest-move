@@ -1,6 +1,6 @@
 <launch>
     <arg name="nest" value="nest" />
-    <arg name="nest_args" value="$(arg nest) 10 0 10 1 True"/>
+    <arg name="nest_args" value="$(arg nest) 10 0.1 1 1 False"/>
     
     <include file="$(find turtlebot_bringup)/launch/minimal.launch" ns="$(arg nest)">
     </include>
