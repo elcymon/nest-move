@@ -194,8 +194,13 @@ class NestPkg:
 if __name__=="__main__":
     node = rospy.init_node('my_turtle',anonymous=True)
     try:
-        experimentDuration,velocity,distance,experimentWaitDuration = 1,0,10,0
+        experimentDuration = eval(sys.argv[1])
+        velocity = eval(sys.argv[2])
+        distance = eval(sys.argv[3])
+        experimentWaitDuration = eval(sys.argv[4])
+        sound = eval(sys.argv[5])
+
         nest = NestPkg(experimentDuration,velocity,distance,experimentWaitDuration)
-        nest.explore(sound=True)
+        nest.explore(sound=sound)
     except rospy.ROSInterruptException:
         pass
