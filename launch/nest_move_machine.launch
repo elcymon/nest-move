@@ -1,8 +1,8 @@
 <launch>
     <arg name="nest" />
     <arg name="nest_args" />
-    <include file="$(find turtlebot_bringup)/launch/minimal.launch" ns="$(arg nest)" >
-    </include>
+    <!-- <include file="$(find turtlebot_bringup)/launch/minimal.launch" ns="$(arg nest)" >
+    </include> -->
 
     <node pkg="nest_move" type="nest_move.py" name="nest_move" output="screen" required="true" machine='$(arg nest)' args="$(arg nest_args)"  ns="$(arg nest)">
     </node>
