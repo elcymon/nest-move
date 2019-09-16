@@ -15,11 +15,10 @@
             <param name="min_loop_frequency" value="1.0"/>
             <param name="angle_wrap" value="6.283185307179586" />
     </node>
-    <!-- <include file="$(find turtlebot_gazebo)/launch/turtlebot_world.launch">
+    <include file="$(find turtlebot_gazebo)/launch/turtlebot_world.launch">
         <arg name="world_file" value="/home/turtlebot/experiments/catkin_ws/src/turtlebot/w_turtlebot.world"/>
-        <arg name="world_file" value="$(find turtlebot_gazebo)/worlds/empty.world"/>
-    </include> -->
-    <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
+    </include>
+    <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf" required="true">
         <param name="output_frame" value="odom"/>
         <param name="freq" value="100.0"/>
         <param name="sensor_timeout" value="1.0"/>
