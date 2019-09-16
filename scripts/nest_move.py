@@ -136,7 +136,7 @@ class NestPkg:
             t_elapsed = rospy.Time.now().to_sec()-t
             log = '{}:{},{},{},{}'.format(self.robotID,goal_d,self.pose.x,self.pose.y,self.yaw)
             pub_log.publish(log)
-            print log
+            rospy.loginfo(str(t_elapsed) + ',' + log)
             # print t_elapsed,goal_d,self.bumper.state
             
             x +=1
@@ -145,6 +145,7 @@ class NestPkg:
             
             
             if self.linear_vel > 0:
+                print self.linear_vel
                 #stop based on distance travelled
                 goal_d = self.goal_distance(self.goal,self.pose)
                 stopCondition = goal_d < 0.1 or self.pose.x > self.goal.x
@@ -195,13 +196,15 @@ class NestPkg:
 if __name__=="__main__":
     node = rospy.init_node('my_turtle',anonymous=True)
     try:
+        rospy.loginfo(','.join(sys.argv))
+
         experimentDuration = eval(sys.argv[1])
         velocity = eval(sys.argv[2])
         distance = eval(sys.argv[3])
         experimentWaitDuration = eval(sys.argv[4])
         sound = eval(sys.argv[5])
 
-        nest = NestPkg(experimentDuration,velocity,distance,experimentWaitDuration)
+        nest = NestPkg(robotID='nest',experimentDuration=experimentDuration,velocity=velocity,distance=distance,experimentWaitDuration=experimentWaitDuration)
         nest.explore(sound=sound)
     except rospy.ROSInterruptException:
         pass
