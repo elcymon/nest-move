@@ -84,15 +84,15 @@ class NestPkg:
     #         f.write(data.data+'\n')
     def explore(self,sound=True):
         
-        pub = rospy.Publisher('mobile_base/commands/velocity', Twist,queue_size=1)
-        pub_hdg_setpoint = rospy.Publisher('/hdg/setpoint',Float64,queue_size=1)
-        pub_hdg_state = rospy.Publisher('/hdg/state',Float64,queue_size=1)
+        pub = rospy.Publisher(self.robotID + '/mobile_base/commands/velocity', Twist,queue_size=1)
+        pub_hdg_setpoint = rospy.Publisher(self.robotID + '/hdg/setpoint',Float64,queue_size=1)
+        pub_hdg_state = rospy.Publisher(self.robotID + '/hdg/state',Float64,queue_size=1)
 
-        sub_imu = rospy.Subscriber('/mobile_base/sensors/imu_data',Imu,self.callback_imu,queue_size=1)
-        sub_bumper = rospy.Subscriber('/mobile_base/events/bumper',BumperEvent,self.callback_bumper,queue_size=1)
-        sub_hdg_pid = rospy.Subscriber('/hdg/control_effort',Float64,self.callback_hdg_pid,queue_size=1)
+        sub_imu = rospy.Subscriber(self.robotID + '/mobile_base/sensors/imu_data',Imu,self.callback_imu,queue_size=1)
+        sub_bumper = rospy.Subscriber(self.robotID + '/mobile_base/events/bumper',BumperEvent,self.callback_bumper,queue_size=1)
+        sub_hdg_pid = rospy.Subscriber(self.robotID + '/hdg/control_effort',Float64,self.callback_hdg_pid,queue_size=1)
 
-        sub_odom = rospy.Subscriber('/odom',Odometry,self.callback_odom,queue_size=1)
+        sub_odom = rospy.Subscriber(self.robotID + '/odom',Odometry,self.callback_odom,queue_size=1)
         
         pub_log = rospy.Publisher('/log',String,queue_size=1)
         # sub_log = rospy.Subscriber('/nest_move/log',String,callback_log,queue_size=1)
@@ -197,14 +197,14 @@ if __name__=="__main__":
     node = rospy.init_node('my_turtle',anonymous=True)
     try:
         rospy.loginfo(','.join(sys.argv))
+        robotID = sys.argv[1]
+        experimentDuration = eval(sys.argv[2])
+        velocity = eval(sys.argv[3])
+        distance = eval(sys.argv[4])
+        experimentWaitDuration = eval(sys.argv[5])
+        sound = eval(sys.argv[6])
 
-        experimentDuration = eval(sys.argv[1])
-        velocity = eval(sys.argv[2])
-        distance = eval(sys.argv[3])
-        experimentWaitDuration = eval(sys.argv[4])
-        sound = eval(sys.argv[5])
-
-        nest = NestPkg(robotID='nest',experimentDuration=experimentDuration,velocity=velocity,distance=distance,experimentWaitDuration=experimentWaitDuration)
+        nest = NestPkg(robotID=robotID,experimentDuration=experimentDuration,velocity=velocity,distance=distance,experimentWaitDuration=experimentWaitDuration)
         nest.explore(sound=sound)
     except rospy.ROSInterruptException:
         pass

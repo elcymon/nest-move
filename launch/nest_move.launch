@@ -1,10 +1,13 @@
 <launch>
-    <include file="$(find turtlebot_bringup)/launch/minimal.launch">
+    <arg name="nest" value="nest" />
+    <arg name="nest_args" value="$(arg nest) 10 0 10 1 True"/>
+    
+    <include file="$(find turtlebot_bringup)/launch/minimal.launch" ns="$(arg nest)">
     </include>
-    <arg name="nest_args" value="10 0 10 1 True"/>
-    <node pkg="nest_move" type="nest_move.py" name="nest_move" output="screen" required="true" args="$(arg nest_args)">
+    
+    <node pkg="nest_move" type="nest_move.py" name="nest_move" output="screen" required="true" args="$(arg nest_args)" ns="$(arg nest)">
     </node>
-    <node ns="hdg" name="hdg_pid" pkg="pid" type="controller" output="screen" required="true">
+    <node ns="$(arg nest)/hdg" name="hdg_pid" pkg="pid" type="controller" output="screen" required="true">
             <param name="Kp" value="10000.0" />
             <param name="Ki" value="000.0" />
             <param name="Kd" value="0.0"/>
@@ -19,7 +22,7 @@
     <!-- <include file="$(find turtlebot_gazebo)/launch/turtlebot_world.launch">
         <arg name="world_file" value="/home/turtlebot/experiments/catkin_ws/src/turtlebot/w_turtlebot.world"/>
     </include> -->
-    <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf" required="true">
+    <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf" required="true" ns="$(arg nest)">
         <param name="output_frame" value="odom"/>
         <param name="freq" value="100.0"/>
         <param name="sensor_timeout" value="1.0"/>
