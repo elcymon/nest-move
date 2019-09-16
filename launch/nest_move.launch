@@ -1,7 +1,8 @@
 <launch>
     <!-- <include file="$(find turtlebot_bringup)/launch/minimal.launch">
     </include> -->
-    <node pkg="nest_move" type="nest_move.py" name="nest_move" output="screen" required="true">
+    <arg name="nest_args" value="10 0 10 1 True"/>
+    <node pkg="nest_move" type="nest_move.py" name="nest_move" output="screen" required="true" args="$(arg nest_args)">
     </node>
     <node ns="hdg" name="hdg_pid" pkg="pid" type="controller" output="screen" required="true">
             <param name="Kp" value="10000.0" />

@@ -136,6 +136,7 @@ class NestPkg:
             t_elapsed = rospy.Time.now().to_sec()-t
             log = '{}:{},{},{},{}'.format(self.robotID,goal_d,self.pose.x,self.pose.y,self.yaw)
             pub_log.publish(log)
+            print log
             # print t_elapsed,goal_d,self.bumper.state
             
             x +=1
