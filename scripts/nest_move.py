@@ -89,7 +89,7 @@ class NestPkg:
         
         pub = rospy.Publisher('/{}/mobile_base/commands/velocity'.format(self.robotID), Twist,queue_size=1)
         pub_hdg_setpoint = rospy.Publisher('/{}/hdg/setpoint'.format(self.robotID),Float64,queue_size=1)
-        pub_hdg_state = rospy.Publisher('/{}/hdg/state',Float64,queue_size=1)
+        pub_hdg_state = rospy.Publisher('/{}/hdg/state'.format(self.robotID),Float64,queue_size=1)
 
         sub_imu = rospy.Subscriber('/{}/mobile_base/sensors/imu_data'.format(self.robotID),Imu,self.callback_imu,queue_size=1)
         sub_bumper = rospy.Subscriber('/{}/mobile_base/events/bumper'.format(self.robotID),BumperEvent,self.callback_bumper,queue_size=1)
@@ -130,19 +130,15 @@ class NestPkg:
         t_elapsed = 0
         t = rospy.Time.now().to_sec()
         goal_d = self.goal_distance(self.goal,self.pose)
-        logheader = 'robotID:goal_d,nest_x,nest_y,nest_yaw'
+        logheader = self.robotID + ':t,goal_d,nest_x,nest_y,nest_yaw'
         
         #pause for some  seconds before starting motion
         time.sleep(self.experimentWaitDuration)
         while not self.experimentStart: #busy wait till experiment start is true
-            continue
-        
-        pub_log.publish(logheader)
+            pub_log.publish(logheader)
+
         while not rospy.is_shutdown():# and x < 10 * 60 * 4
             t_elapsed = rospy.Time.now().to_sec()-t
-            log = '{}:{},{},{},{}'.format(self.robotID,goal_d,self.pose.x,self.pose.y,self.yaw)
-            pub_log.publish(log)
-            rospy.loginfo(str(t_elapsed) + ',' + log)
             # print t_elapsed,goal_d,self.bumper.state
             
             x +=1
@@ -195,6 +191,10 @@ class NestPkg:
             pub_hdg_setpoint.publish(set_p)
             pub_hdg_state.publish(state_p)
             # print(yaw)        
+            log = '{}:{},{},{},{}'.format(self.robotID,goal_d,self.pose.x,self.pose.y,self.yaw)
+            pub_log.publish(log)
+            rospy.loginfo(str(t_elapsed) + ',' + log)
+            
             rate.sleep()
             
         print("Quitting")
