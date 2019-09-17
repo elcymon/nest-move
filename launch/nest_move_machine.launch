@@ -1,6 +1,9 @@
 <launch>
     <arg name="nest" />
     <arg name="nest_args" />
+    <!-- <remap from="/mobile_base/commands/velocity" to="$(arg nest)/mobile_base/commands/velocity" />
+    <remap from="/mobile_base/sensors/imu_data" to="$(arg nest)/mobile_base/sensors/imu_data" />
+    <remap from="/mobile_base/events/bumper" to="$(arg nest)/mobile_base/events/bumper" /> -->
     <!-- <include file="$(find turtlebot_bringup)/launch/minimal.launch" ns="$(arg nest)" >
     </include> -->
 
