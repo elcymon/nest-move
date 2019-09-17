@@ -193,7 +193,7 @@ class NestPkg:
             pub_hdg_state.publish(state_p)
             # print(yaw)        
             log = '{}:{},{},{},{}'.format(self.robotID,goal_d,self.pose.x,self.pose.y,self.yaw)
-            pub_log.publish(log)
+            # pub_log.publish(log)
             rospy.loginfo(str(t_elapsed) + ',' + log)
             
             rate.sleep()
