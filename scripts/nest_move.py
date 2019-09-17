@@ -3,7 +3,7 @@ import rospy
 import angles
 from geometry_msgs.msg import Twist,Point
 from nav_msgs.msg import Odometry
-from std_msgs.msg import Float64,String
+from std_msgs.msg import Float64,String, Bool
 from sensor_msgs.msg import Imu
 from kobuki_msgs.msg import BumperEvent
 from tf.transformations import euler_from_quaternion
@@ -27,6 +27,7 @@ class NestPkg:
         self.linear_vel = velocity
         self.angular_vel = velocity / 1.77 # half of 0.354 diameter
         self.experimentDuration = experimentDuration
+        self.experimentStart = False
 
         self.yaw = 0
         
@@ -79,6 +80,8 @@ class NestPkg:
         """computes distance of robot from desired goal location"""
         # return math.sqrt(pow(g.x-p.pose.pose.position.x,2) + pow(g.y-p.pose.pose.position.y,2))
         return math.sqrt(pow(g.x-p.x,2) + pow(g.y-p.y,2))
+    def callback_experimentStart(self,data):
+        self.experimentStart = data.data
     # def callback_log(data):
     #     with open(log_filename,'a') as f:
     #         f.write(data.data+'\n')
@@ -93,6 +96,7 @@ class NestPkg:
         sub_hdg_pid = rospy.Subscriber('/{}/hdg/control_effort'.format(self.robotID),Float64,self.callback_hdg_pid,queue_size=1)
 
         sub_odom = rospy.Subscriber('/{}/odom'.format(self.robotID),Odometry,self.callback_odom,queue_size=1)
+        sub_experimentStart = rospy.Subscriber('/experimentStart',Bool,self.callback_experimentStart,queue_size=1)
         
         pub_log = rospy.Publisher('/log',String,queue_size=1)
         # sub_log = rospy.Subscriber('/nest_move/log',String,callback_log,queue_size=1)
@@ -130,6 +134,8 @@ class NestPkg:
         
         #pause for some  seconds before starting motion
         time.sleep(self.experimentWaitDuration)
+        while not self.experimentStart: #busy wait till experiment start is true
+            continue
         
         pub_log.publish(logheader)
         while not rospy.is_shutdown():# and x < 10 * 60 * 4
