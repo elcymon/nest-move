@@ -98,7 +98,7 @@ class NestPkg:
         sub_odom = rospy.Subscriber('/{}/odom'.format(self.robotID),Odometry,self.callback_odom,queue_size=1)
         sub_experimentStart = rospy.Subscriber('/experimentStart',Bool,self.callback_experimentStart,queue_size=10)
         
-        pub_log = rospy.Publisher('/{}/log'.format(self.robotID),String,queue_size=1)
+        pub_log = rospy.Publisher('/{}/log'.format(self.robotID),String,queue_size=5)
         # sub_log = rospy.Subscriber('/nest_move/log',String,callback_log,queue_size=1)
         rate = rospy.Rate(self.hz)
         straight = Twist()
@@ -196,7 +196,6 @@ class NestPkg:
             pub_hdg_state.publish(state_p)
             # print(yaw)        
             log = '{}:{},{},{},{}'.format(self.robotID,goal_d,self.pose.x,self.pose.y,self.yaw)
-            logTime = rospy.Time.now().to_sec()
             if rospy.Time.now().to_sec() - logTime > 0.5:
                 pub_log.publish(log)
                 logTime = rospy.Time.now().to_sec()
