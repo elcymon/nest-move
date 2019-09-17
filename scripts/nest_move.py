@@ -96,7 +96,7 @@ class NestPkg:
         sub_hdg_pid = rospy.Subscriber('/{}/hdg/control_effort'.format(self.robotID),Float64,self.callback_hdg_pid,queue_size=1)
 
         sub_odom = rospy.Subscriber('/{}/odom'.format(self.robotID),Odometry,self.callback_odom,queue_size=1)
-        sub_experimentStart = rospy.Subscriber('/experimentStart',Bool,self.callback_experimentStart,queue_size=1)
+        sub_experimentStart = rospy.Subscriber('/experimentStart',Bool,self.callback_experimentStart,queue_size=10)
         
         pub_log = rospy.Publisher('/log',String,queue_size=1)
         # sub_log = rospy.Subscriber('/nest_move/log',String,callback_log,queue_size=1)
