@@ -135,6 +135,7 @@ class NestPkg:
         time.sleep(self.experimentWaitDuration)
         while not self.experimentStart: #busy wait till experiment start is true
             pub_log.publish(logheader)
+            rate.sleep()
 
         t = rospy.Time.now().to_sec()
         
