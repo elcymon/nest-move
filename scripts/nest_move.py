@@ -128,7 +128,6 @@ class NestPkg:
             thread.start()
 
         t_elapsed = 0
-        t = rospy.Time.now().to_sec()
         goal_d = self.goal_distance(self.goal,self.pose)
         logheader = self.robotID + ':t,goal_d,nest_x,nest_y,nest_yaw'
         
@@ -137,6 +136,8 @@ class NestPkg:
         while not self.experimentStart: #busy wait till experiment start is true
             pub_log.publish(logheader)
 
+        t = rospy.Time.now().to_sec()
+        
         while not rospy.is_shutdown():# and x < 10 * 60 * 4
             t_elapsed = rospy.Time.now().to_sec()-t
             # print t_elapsed,goal_d,self.bumper.state
