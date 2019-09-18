@@ -62,6 +62,8 @@ class NestPkg:
         self.bumper = data
         if self.bumper.state == 1:
             self.avoid_obstacle = True
+        else:
+            self.avoid_obstacle = False
 
     def callback_hdg_pid(self,data):
         self.hdg_ctrl_effort = data.data
@@ -129,7 +131,7 @@ class NestPkg:
 
         t_elapsed = 0
         goal_d = self.goal_distance(self.goal,self.pose)
-        logheader = self.robotID + ':t,goal_d,nest_x,nest_y,nest_yaw'
+        logheader = self.robotID + ':t,goal_d,x,y,yaw'
         
         #pause for some  seconds before starting motion
         time.sleep(self.experimentWaitDuration)
@@ -174,7 +176,7 @@ class NestPkg:
                 rvel.angular.z = rot_vel
             
             #stop whenever an obstacle is hit
-            if self.bumper.state == 1:
+            if self.avoid_obstacle:
                 rvel = stop
             
             # pub_log.publish(log)

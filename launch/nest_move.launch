@@ -1,7 +1,16 @@
 <launch>
-    <arg name="nest" value="nest" />
-    <arg name="nest_args" value="$(arg nest) 10 0.1 1 1 False"/>
+    <arg name="experimentWaitDuration" value="1" />
+    <arg name="expDuration" value="600" />
+    <arg name="hear" value="True" />
     
+    
+    <arg name="nest" value="nest" />
+    <arg name="nestVelocity" value="0.1" />
+    <arg name="nestTravelDistance" value="2" />
+    <arg name="nest_args_data" value="$(arg nest) $(arg expDuration) $(arg nestVelocity) $(arg nestTravelDistance) $(arg experimentWaitDuration) $(arg hear)" />
+    
+    <arg name="nest_args" value="$(arg nest_args_data)" />
+
     <include file="$(find turtlebot_bringup)/launch/minimal.launch" ns="$(arg nest)">
     </include>
     
