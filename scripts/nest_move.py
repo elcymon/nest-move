@@ -195,7 +195,7 @@ class NestPkg:
             pub_hdg_setpoint.publish(set_p)
             pub_hdg_state.publish(state_p)
             # print(yaw)        
-            log = '{}:{},{},{},{}'.format(self.robotID,goal_d,self.pose.x,self.pose.y,self.yaw)
+            log = '{}:{:.4f},{:.4f},{:.4f},{:.4f}'.format(self.robotID,goal_d,self.pose.x,self.pose.y,self.yaw)
             if rospy.Time.now().to_sec() - logTime > 0.5:
                 pub_log.publish(log)
                 logTime = rospy.Time.now().to_sec()
