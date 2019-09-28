@@ -120,13 +120,17 @@ class NestPkg:
         x = 0
 
 
-        #create thread for starting nest's speaker as it starts moving
-        audio_gen = Audio_gen(self.pkg_path+'White-noise-sound-20sec-mono-44100Hz.wav')
-        thread = Thread(target = audio_gen.send_to_speaker)
         
         
         #start sound
-        if sound:
+        if sound is not None:
+            #create thread for starting nest's speaker as it starts moving
+            if sound == 'white':
+                audio_gen = Audio_gen(filename=self.pkg_path+'White-noise-sound-20sec-mono-44100Hz.wav')
+            else:
+                audio_gen = Audio_gen(frequency = sound)
+            
+            thread = Thread(target = audio_gen.send_to_speaker)
             thread.start()
 
         t_elapsed = 0
@@ -212,7 +216,10 @@ if __name__=="__main__":
         velocity = eval(sys.argv[3])
         distance = eval(sys.argv[4])
         experimentWaitDuration = eval(sys.argv[5])
-        sound = eval(sys.argv[6])
+        if 'white' == sys.argv[6]:
+            sound = sys.argv[6] 
+        else:
+            sound = eval(sys.argv[6])
 
         nest = NestPkg(robotID=robotID,experimentDuration=experimentDuration,velocity=velocity,distance=distance,experimentWaitDuration=experimentWaitDuration)
         nest.explore(sound=sound)

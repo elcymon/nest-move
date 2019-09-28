@@ -1,7 +1,7 @@
 <launch>
     <arg name="experimentWaitDuration" value="1" />
     <arg name="expDuration" value="600" />
-    <arg name="hear" value="True" />
+    <arg name="hear" value="500" />
     
     
     <arg name="nest" value="nest" />
